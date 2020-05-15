@@ -1,8 +1,8 @@
 import numpy as np
 import pandas as pd
 from mydict import dictionary
-import matplotlib.pyplot as plt
-import seaborn as sns
+#import matplotlib.pyplot as plt
+#import seaborn as sns
 
 import random
 from pprint import pprint
@@ -23,8 +23,8 @@ class Node:
         print("right : " + str(self.right))
 
 
-train_df = pd.read_csv("/sample_train.csv")
-test_df = pd.read_csv("/sample_dev.csv")
+train_df = pd.read_csv("sample_train.csv")
+test_df = pd.read_csv("sample_dev.csv")
 test_df = test_df.drop("reviews.text", axis=1)
 test_df = test_df.rename(columns={"rating": "label"})
 train_df = train_df.drop("reviews.text", axis=1)
@@ -62,45 +62,42 @@ def split_data(data, split_column, split_value):
 
 
 def get_potential_splits(data):
-    potential_splits = {}
+    potential_splits = dictionary()
     _, n_columns = data.shape
-    for column_index in range(n_columns - 1):  # excluding the last column which is the label
-        potential_splits[column_index] = []
+    for column_index in range(n_columns - 1):    
         values = data[:, column_index]
         unique_values = np.unique(values)
-        potential_splits[column_index] = unique_values
-
+        potential_splits.add(column_index,unique_values)
+    
     return potential_splits
 
-
-def calculate_entropy(data):
-    label_column = data[:, -1]
-    _, counts = np.unique(label_column, return_counts=True)
-
-    probabilities = counts / counts.sum()
-    entropy = sum(probabilities * -np.log2(probabilities))
-
+def get_entropy(data):
+    #sum of prob of all classes * -log(prob)
+    rate_col= data[:, -1]
+    #calculate the number of each class in the given data after that we have to calc the probab by dividing by the sum of two classes
+    _, num = np.unique(rate_col, return_counts=True) 
+    prob = num/ num.sum() #we can add counts[0] + count[1] but this may give error if a class isn't found at all
+    entropy = sum(prob * -np.log2(prob))
     return entropy
 
 
-def calculate_overall_entropy(data_below, data_above):
-    n = len(data_below) + len(data_above)
-    p_data_below = len(data_below) / n
-    p_data_above = len(data_above) / n
-
-    overall_entropy = (p_data_below * calculate_entropy(data_below)
-                       + p_data_above * calculate_entropy(data_above))
-
+def get_overall_entropy(data_equal, data_not_equal):
+    data_point = len(data_equal) + len(data_not_equal)
+    p_data_equal = len(data_equal) /data_point
+    p_data_not_equal = len(data_not_equal) /data_point
+    overall_entropy =  (p_data_equal * get_entropy(data_equal) + p_data_not_equal * get_entropy(data_not_equal))
+    
     return overall_entropy
 
 
 def determine_best_split(data, potential_splits):
     overall_entropy = 9999
-    for column_index in potential_splits:
+    _, n_columns = data.shape
+    for column_index in range(n_columns - 1):
         # print(COLUMN_HEADERS[column_index], '-', len(np.unique(data[:, column_index])))
-        for value in potential_splits[column_index]:
+        for value in potential_splits.get(column_index):
             data_below, data_above = split_data(data, split_column=column_index, split_value=value)
-            current_overall_entropy = calculate_overall_entropy(data_below, data_above)
+            current_overall_entropy = get_overall_entropy(data_below, data_above)
 
             if current_overall_entropy <= overall_entropy:
                 overall_entropy = current_overall_entropy
@@ -110,10 +107,10 @@ def determine_best_split(data, potential_splits):
     return best_split_column, best_split_value
 # print(classify_data(train_df[train_df.contains_comfortable == 1].values))
 data_eq, data_noteq = split_data(train_df.values, 0, 1)
-print(get_potential_splits(test_df.values))
+#print(get_potential_splits(test_df.values))
 
 bestcolumn, bestvalue = determine_best_split(train_df.values,get_potential_splits(train_df.values))
-print(bestvalue)
+print(bestcolumn)
 
 
 def decision_tree_algorithm(df, counter=0, min_samples=2, max_depth=5):
