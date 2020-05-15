@@ -2,6 +2,7 @@ class dictionary:
     def __init__(self):
         self.size = 10
         self.map = [None] * self.size #array to store the data in
+        self.counter =0
     
     # to pick where to store the key
     def get_hash(self,key):
@@ -13,6 +14,7 @@ class dictionary:
 
 
     def add(self,key,value):
+        self.counter=self.counter+1
         key_hash = self.get_hash(key)
         key_value = [key,value]
 
@@ -43,6 +45,7 @@ class dictionary:
             return None #because the place may have many pair but my key doesnt exist
 
     def delete (self, key):
+        self.counter=self.counter-1
         key_hash = self.get_hash(key)
         if self.map[key_hash] is not None:
             #cannt be for loop with kv as get bec kv is a list not int or index
@@ -60,13 +63,20 @@ class dictionary:
                 print(i)
 
 
-#mydict = dictionary()
-#mydict.add('m',3)
+mydict = dictionary()
+if(mydict.counter == 0):
+    print("zero")
+mydict.add(3,[2.5,2])
+if(mydict.counter == 0):
+    print("zero")
+else:
+    print("one")
 #mydict.add('T','Tasnim')
 #mydict.add ('s', 333)
 #x=mydict.delete('T')
 #y= mydict.get('s')
-#mydict.print()
+mydict.print()
 #print(x)
 #print(y)
+
 

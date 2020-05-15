@@ -135,7 +135,7 @@ def decision_tree_algorithm(df, counter=0, min_samples=2, max_depth=5):
 
         # helper functions
         potential_splits = get_potential_splits(data)
-        if len(potential_splits) == 0:
+        if potential_splits.counter == 0:
             classification = classify_data(data)
             return classification
 
@@ -164,5 +164,5 @@ def decision_tree_algorithm(df, counter=0, min_samples=2, max_depth=5):
 
         return sub_tree
 
-
+pprint(decision_tree_algorithm(train_df,0,2,5))
 # plt.show(sns.lmplot(x="contains_No", y="contains_Please",  data=test_df , hue="label",fit_reg= False,size = 20,aspect=1.5))
