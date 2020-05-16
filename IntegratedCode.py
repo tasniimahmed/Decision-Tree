@@ -1,27 +1,11 @@
 import numpy as np
 import pandas as pd
 from mydict import dictionary
-#import matplotlib.pyplot as plt
-#import seaborn as sns
-
+# import matplotlib.pyplot as plt
+# import seaborn as sns
+from Tree_Node import Node, BinaryTree
 import random
 from pprint import pprint
-
-
-class Node:
-    # Node class is meant to be used only by the
-    # Tree class , so no more functions need to be
-    # Added.
-    def __init__(self, data=None):
-        self.data = data
-        self.right = None
-        self.left = None
-
-    def print_content(self):
-        print("Data : " + str(self.data))
-        print("left : " + str(self.left))
-        print("right : " + str(self.right))
-
 
 train_df = pd.read_csv("sample_train.csv")
 test_df = pd.read_csv("sample_dev.csv")
@@ -47,6 +31,7 @@ def classify_data(data):
     unique_classes, counts_unique_classes = np.unique(label_column, return_counts=True)
 
     index = counts_unique_classes.argmax()
+    # return positive or negative based of majority
     classification = unique_classes[index]
 
     return classification
@@ -64,29 +49,30 @@ def split_data(data, split_column, split_value):
 def get_potential_splits(data):
     potential_splits = dictionary()
     _, n_columns = data.shape
-    for column_index in range(n_columns - 1):    
+    for column_index in range(n_columns - 1):
         values = data[:, column_index]
         unique_values = np.unique(values)
-        potential_splits.add(column_index,unique_values)
-    
+        potential_splits.add(column_index, unique_values)
+
     return potential_splits
 
+
 def get_entropy(data):
-    #sum of prob of all classes * -log(prob)
-    rate_col= data[:, -1]
-    #calculate the number of each class in the given data after that we have to calc the probab by dividing by the sum of two classes
-    _, num = np.unique(rate_col, return_counts=True) 
-    prob = num/ num.sum() #we can add counts[0] + count[1] but this may give error if a class isn't found at all
+    # sum of prob of all classes * -log(prob)
+    rate_col = data[:, -1]
+    # calculate the number of each class in the given data after that we have to calc the probab by dividing by the sum of two classes
+    _, num = np.unique(rate_col, return_counts=True)
+    prob = num / num.sum()  # we can add counts[0] + count[1] but this may give error if a class isn't found at all
     entropy = sum(prob * -np.log2(prob))
     return entropy
 
 
 def get_overall_entropy(data_equal, data_not_equal):
     data_point = len(data_equal) + len(data_not_equal)
-    p_data_equal = len(data_equal) /data_point
-    p_data_not_equal = len(data_not_equal) /data_point
-    overall_entropy =  (p_data_equal * get_entropy(data_equal) + p_data_not_equal * get_entropy(data_not_equal))
-    
+    p_data_equal = len(data_equal) / data_point
+    p_data_not_equal = len(data_not_equal) / data_point
+    overall_entropy = (p_data_equal * get_entropy(data_equal) + p_data_not_equal * get_entropy(data_not_equal))
+
     return overall_entropy
 
 
@@ -96,8 +82,8 @@ def determine_best_split(data, potential_splits):
     for column_index in range(n_columns - 1):
         # print(COLUMN_HEADERS[column_index], '-', len(np.unique(data[:, column_index])))
         for value in potential_splits.get(column_index):
-            data_below, data_above = split_data(data, split_column=column_index, split_value=value)
-            current_overall_entropy = get_overall_entropy(data_below, data_above)
+            data_equal, data_not_equal = split_data(data, split_column=column_index, split_value=value)
+            current_overall_entropy = get_overall_entropy(data_equal, data_not_equal)
 
             if current_overall_entropy <= overall_entropy:
                 overall_entropy = current_overall_entropy
@@ -105,24 +91,32 @@ def determine_best_split(data, potential_splits):
                 best_split_value = value
 
     return best_split_column, best_split_value
+
+
 # print(classify_data(train_df[train_df.contains_comfortable == 1].values))
-data_eq, data_noteq = split_data(train_df.values, 0, 1)
-#print(get_potential_splits(test_df.values))
+data_eq, data_not_eq = split_data(train_df.values, 0, 1)
+# print(get_potential_splits(test_df.values))
 
-bestcolumn, bestvalue = determine_best_split(train_df.values,get_potential_splits(train_df.values))
-print(bestcolumn)
+bestcolumn, bestvalue = determine_best_split(train_df.values, get_potential_splits(train_df.values))
+
+# print(bestcolumn)
+
+TreeOfNodes = BinaryTree()
 
 
-def decision_tree_algorithm(df, counter=0, min_samples=2, max_depth=5):
+def decision_tree_algorithm_without_nodes(df, current_node, counter=0, min_samples=2, max_depth=5):
     # data preparations
     if counter == 0:
         global COLUMN_HEADERS
+
         COLUMN_HEADERS = df.columns
         data = df.values
     else:
         data = df
 
         # base cases
+        # len of data returns the total number of features
+        # upon reaching 1 feature i will break of the loop
     if (check_purity(data)) or (len(data) < min_samples) or (counter == max_depth):
         classification = classify_data(data)
 
@@ -135,34 +129,153 @@ def decision_tree_algorithm(df, counter=0, min_samples=2, max_depth=5):
 
         # helper functions
         potential_splits = get_potential_splits(data)
+        # get potential splits return a dicitonar of columns with unique values in each column
         if potential_splits.counter == 0:
             classification = classify_data(data)
+
             return classification
 
         split_column, split_value = determine_best_split(data, potential_splits)
-        data_below, data_above = split_data(data, split_column, split_value)
 
+        data_equal, data_not_equal = split_data(data, split_column, split_value)
+        # print(COLUMN_HEADERS[split_column])
+        # print(counter)
         # instantiate sub-tree
         feature_name = COLUMN_HEADERS[split_column]
-        feature_name
+        # print("Feature Name :: ")
+        # print(feature_name)
         # question = "{} <= {}".format(feature_name, split_value)
         question = "{} = {}".format(feature_name, split_value)
         sub_tree = {question: []}
 
         # find answers (recursion)
-        yes_answer = decision_tree_algorithm(data_below, counter, min_samples, max_depth)
-        no_answer = decision_tree_algorithm(data_above, counter, min_samples, max_depth)
+        yes_answer = decision_tree_algorithm_without_nodes(data_equal, counter, min_samples, max_depth)
+        no_answer = decision_tree_algorithm_without_nodes(data_not_equal, counter, min_samples, max_depth)
+        # print("feature:")
+        # print(feature_name)
+        # print("yes answer : ")
+        # print(yes_answer)
+        # print("no answer : ")
+        # print(no_answer)
+        # print("question:")
+        # print(question)
 
         # If the answers are the same, then there is no point in asking the qestion.
         # This could happen when the data is classified even though it is not pure
         # yet (min_samples or max_depth base cases).
         if yes_answer == no_answer:
             sub_tree = yes_answer
+
         else:
             sub_tree[question].append(yes_answer)
             sub_tree[question].append(no_answer)
-
+            # print("************* I REACHED THIS CONDITION AND CONCATENATED FROM IT")
         return sub_tree
 
-pprint(decision_tree_algorithm(train_df,0,2,5))
+
+def decision_tree_algorithm_with_nodes(df, current_node, counter=0, min_samples=2, max_depth=5):
+    # data preparations
+    if counter == 0:
+        global COLUMN_HEADERS
+
+        COLUMN_HEADERS = df.columns
+        data = df.values
+    else:
+        data = df
+
+        # base cases
+        # len of data returns the total number of features
+        # upon reaching 1 feature i will break of the loop
+    if (check_purity(data)) or (len(data) < min_samples) or (counter == max_depth):
+        classification = classify_data(data)
+        current_node = Node(classification)
+        return current_node
+
+
+    # recursive part
+    else:
+        counter += 1
+
+        # helper functions
+        potential_splits = get_potential_splits(data)
+        # get potential splits return a dicitonar of columns with unique values in each column
+        if potential_splits.counter == 0:
+            classification = classify_data(data)
+            current_node = Node(classification)
+            return current_node
+
+        split_column, split_value = determine_best_split(data, potential_splits)
+        data_equal, data_not_equal = split_data(data, split_column, split_value)
+
+        # instantiate sub-tree
+        feature_name = COLUMN_HEADERS[split_column]
+        if counter == 1:
+            current_node = Node(feature_name)
+
+        # find answers (recursion)
+
+        if current_node is None:
+            current_node = Node()
+        current_node.right = decision_tree_algorithm_with_nodes(data_equal, current_node.right,counter, min_samples, max_depth)
+        current_node.left = decision_tree_algorithm_with_nodes(data_not_equal, current_node.left, counter, min_samples, max_depth)
+
+        # If the answers are the same, then there is no point in asking the qestion.
+        # This could happen when the data is classified even though it is not pure
+        # yet (min_samples or max_depth base cases).
+        if current_node.right == current_node.left:
+            current_node.value = current_node.right.value
+
+        # else:
+        #     TreeOfNodes.insert(yes_node,'yes')
+        #     TreeOfNodes.insert(no_node, 'no')
+
+        return current_node
+
+TreeOfNodes.root
+tree = decision_tree_algorithm_without_nodes(train_df, TreeOfNodes.root, max_depth=5)
+decision_tree_algorithm_with_nodes(train_df, TreeOfNodes.root, max_depth=5)
+pprint(tree)
+# decision_tree_algorithm_with_nodes(train_df, TreeOfNodes, max_depth=5)
+# print("The value of root : ")
+# print(TreeOfNodes.root)
+
+# print('finished training')
+
+def classify_example(example, tree):
+    question = list(tree.keys())[0]
+    feature_name, comparison_operator, value = question.split()
+
+    # ask question
+    if comparison_operator == "=":
+        print(feature_name)
+        print(str(example[feature_name]))
+        # if example[feature_name] <= float(value):
+        if str(example[feature_name]) == value:
+            answer = tree[question][0]
+        else:
+            answer = tree[question][1]
+
+    # base case
+    if not isinstance(answer, dict):
+        return answer
+
+    # recursive part
+    else:
+        residual_tree = answer
+        print(residual_tree)
+        return classify_example(example, residual_tree)
+
+
+def calculate_accuracy(df, tree):
+    df["classification"] = df.apply(classify_example, axis=1, args=(tree,))
+    df["classification_correct"] = df["classification"] == df["label"]
+
+    accuracy = df["classification_correct"].mean()
+
+    return accuracy
+
+
+accuracy = calculate_accuracy(test_df, tree)
+print('accuracy')
+print(calculate_accuracy(test_df, tree))
 # plt.show(sns.lmplot(x="contains_No", y="contains_Please",  data=test_df , hue="label",fit_reg= False,size = 20,aspect=1.5))
