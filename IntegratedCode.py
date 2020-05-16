@@ -235,11 +235,11 @@ def decision_tree_algorithm_with_nodes(df, current_node, counter=0, min_samples=
 
 TreeOfNodes.root
 #tree = decision_tree_algorithm_without_nodes(train_df,  max_depth=5)
-TreeOfNodes.root = decision_tree_algorithm_with_nodes(train_df, TreeOfNodes.root, max_depth=1)
+TreeOfNodes.root = decision_tree_algorithm_with_nodes(train_df, TreeOfNodes.root, max_depth=5)
 #pprint(tree)
 print("                         ********** TREE *************")
 #print(TreeOfNodes.root)
-print(TreeOfNodes.root)
+#print(TreeOfNodes.root)
 
 # decision_tree_algorithm_with_nodes(train_df, TreeOfNodes, max_depth=5)
 # print("The value of root : ")
@@ -259,21 +259,19 @@ def classify_example_with_Nodes(example,tree):
         #it's a question 
         if example[tree.value] == 1: #a yes answer
             #return tree.left.value
-            return classify_example_with_Nodes(example,tree.left)
+            return classify_example_with_Nodes(example,tree.right)
         
         elif example[tree.value]==0: #a no answer
             #return tree.right.value
             #print(tree.right.value)
-            print(tree.value)
-            print(tree.right.value)
-            return classify_example_with_Nodes(example,tree.right)
+            return classify_example_with_Nodes(example,tree.left)
             
 
 
-example=test_df.iloc[0] #first row of test_df
-x=classify_example_with_Nodes(example,TreeOfNodes.root)
+#example=test_df.iloc[0] #first row of test_df
+#x=classify_example_with_Nodes(example,TreeOfNodes.root)
 
-print(x)
+#print(x)
 
 def classify_example(example, tree):
     question = list(tree.keys())[0] #to get the ques
@@ -301,7 +299,7 @@ def classify_example(example, tree):
 
 
 def calculate_accuracy(df, tree):
-    df["classification"] = df.apply(classify_example, axis=1, args=(tree,))
+    df["classification"] = df.apply(classify_example_with_Nodes, axis=1, args=(tree,))
     df["classification_correct"] = df["classification"] == df["label"]
 
     accuracy = df["classification_correct"].mean()
@@ -309,7 +307,7 @@ def calculate_accuracy(df, tree):
     return accuracy
 
 
-#accuracy = calculate_accuracy(test_df, tree)
-#print('accuracy')
+accuracy = calculate_accuracy(test_df, TreeOfNodes.root)
+print(accuracy)
 #print(calculate_accuracy(test_df, tree))
 # plt.show(sns.lmplot(x="contains_No", y="contains_Please",  data=test_df , hue="label",fit_reg= False,size = 20,aspect=1.5))
