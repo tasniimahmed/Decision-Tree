@@ -194,7 +194,7 @@ def decision_tree_algorithm_with_nodes(df, current_node, counter=0, min_samples=
 
     # recursive part
     else:
-        counter += 1
+        counter = counter + 1
 
         # helper functions
         potential_splits = get_potential_splits(data)
@@ -202,6 +202,7 @@ def decision_tree_algorithm_with_nodes(df, current_node, counter=0, min_samples=
         if potential_splits.counter == 0:
             classification = classify_data(data)
             current_node = Node(classification)
+            print(current_node.value)
             return current_node
 
         split_column, split_value = determine_best_split(data, potential_splits)
@@ -215,7 +216,7 @@ def decision_tree_algorithm_with_nodes(df, current_node, counter=0, min_samples=
         # find answers (recursion)
 
         if current_node is None:
-            current_node = Node()
+            current_node = Node(feature_name)
         current_node.right = decision_tree_algorithm_with_nodes(data_equal, current_node.right,counter, min_samples, max_depth)
         current_node.left = decision_tree_algorithm_with_nodes(data_not_equal, current_node.left, counter, min_samples, max_depth)
 
@@ -233,12 +234,15 @@ def decision_tree_algorithm_with_nodes(df, current_node, counter=0, min_samples=
 
 TreeOfNodes.root
 tree = decision_tree_algorithm_without_nodes(train_df, TreeOfNodes.root, max_depth=5)
-decision_tree_algorithm_with_nodes(train_df, TreeOfNodes.root, max_depth=5)
-pprint(tree)
+TreeOfNodes.root = decision_tree_algorithm_with_nodes(train_df, TreeOfNodes.root, max_depth=5)
+# pprint(tree)
+print("                         ********** TREE *************")
+print(TreeOfNodes.root)
+
 # decision_tree_algorithm_with_nodes(train_df, TreeOfNodes, max_depth=5)
 # print("The value of root : ")
 # print(TreeOfNodes.root)
-
+#
 # print('finished training')
 
 def classify_example(example, tree):
