@@ -252,23 +252,21 @@ def classify_example_with_Nodes(example,tree):
 
     if tree.left == None and tree.right == None:
         #base case of classification +ve or -Ve
-        print("here")
-        print(tree.value)
-        x=tree.value
-        print(x)
-        return x
+        #print("here")
+        return tree.value
+        
     else:
         #it's a question 
         if example[tree.value] == 1: #a yes answer
             #return tree.left.value
-            classify_example_with_Nodes(example,tree.left)
+            return classify_example_with_Nodes(example,tree.left)
         
         elif example[tree.value]==0: #a no answer
             #return tree.right.value
             #print(tree.right.value)
             print(tree.value)
             print(tree.right.value)
-            classify_example_with_Nodes(example,tree.right)
+            return classify_example_with_Nodes(example,tree.right)
             
 
 
