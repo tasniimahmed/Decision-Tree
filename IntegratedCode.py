@@ -104,7 +104,7 @@ bestcolumn, bestvalue = determine_best_split(train_df.values, get_potential_spli
 TreeOfNodes = BinaryTree()
 
 
-def decision_tree_algorithm_without_nodes(df, current_node, counter=0, min_samples=2, max_depth=5):
+def decision_tree_algorithm_without_nodes(df, counter=0, min_samples=2, max_depth=5):
     # data preparations
     if counter == 0:
         global COLUMN_HEADERS
@@ -225,6 +225,7 @@ def decision_tree_algorithm_with_nodes(df, current_node, counter=0, min_samples=
         # yet (min_samples or max_depth base cases).
         if current_node.right == current_node.left:
             current_node.value = current_node.right.value
+        
 
         # else:
         #     TreeOfNodes.insert(yes_node,'yes')
@@ -233,10 +234,11 @@ def decision_tree_algorithm_with_nodes(df, current_node, counter=0, min_samples=
         return current_node
 
 TreeOfNodes.root
-tree = decision_tree_algorithm_without_nodes(train_df, TreeOfNodes.root, max_depth=5)
-TreeOfNodes.root = decision_tree_algorithm_with_nodes(train_df, TreeOfNodes.root, max_depth=5)
-# pprint(tree)
+#tree = decision_tree_algorithm_without_nodes(train_df,  max_depth=5)
+TreeOfNodes.root = decision_tree_algorithm_with_nodes(train_df, TreeOfNodes.root, max_depth=1)
+#pprint(tree)
 print("                         ********** TREE *************")
+#print(TreeOfNodes.root)
 print(TreeOfNodes.root)
 
 # decision_tree_algorithm_with_nodes(train_df, TreeOfNodes, max_depth=5)
@@ -245,8 +247,38 @@ print(TreeOfNodes.root)
 #
 # print('finished training')
 
+
+def classify_example_with_Nodes(example,tree):
+
+    if tree.left == None and tree.right == None:
+        #base case of classification +ve or -Ve
+        print("here")
+        print(tree.value)
+        x=tree.value
+        print(x)
+        return x
+    else:
+        #it's a question 
+        if example[tree.value] == 1: #a yes answer
+            #return tree.left.value
+            classify_example_with_Nodes(example,tree.left)
+        
+        elif example[tree.value]==0: #a no answer
+            #return tree.right.value
+            #print(tree.right.value)
+            print(tree.value)
+            print(tree.right.value)
+            classify_example_with_Nodes(example,tree.right)
+            
+
+
+example=test_df.iloc[0] #first row of test_df
+x=classify_example_with_Nodes(example,TreeOfNodes.root)
+
+print(x)
+
 def classify_example(example, tree):
-    question = list(tree.keys())[0]
+    question = list(tree.keys())[0] #to get the ques
     feature_name, comparison_operator, value = question.split()
 
     # ask question
@@ -279,7 +311,7 @@ def calculate_accuracy(df, tree):
     return accuracy
 
 
-accuracy = calculate_accuracy(test_df, tree)
-print('accuracy')
-print(calculate_accuracy(test_df, tree))
+#accuracy = calculate_accuracy(test_df, tree)
+#print('accuracy')
+#print(calculate_accuracy(test_df, tree))
 # plt.show(sns.lmplot(x="contains_No", y="contains_Please",  data=test_df , hue="label",fit_reg= False,size = 20,aspect=1.5))
