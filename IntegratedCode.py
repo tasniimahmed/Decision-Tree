@@ -344,13 +344,15 @@ def classify_example(example, tree):
 
 
 def calculate_accuracy(df, tree):
-    df["classification"] = df.apply(classify_example_with_Nodes, axis=1, args=(tree,1,))
-    df["classification_correct"] = df["classification"] == df["label"]
+    #applying the classification function on the given df
+    df["classification"] = df.apply(classify_example_with_Nodes, axis=1, args=(tree,))
+    #writing the result of classification in a file
     df["classification"].to_csv('classify.csv', encoding='utf-8')
-
-    accuracy = df["classification_correct"].mean()
-
-    return accuracy
+    #check if we want to calculate the accuracy or not (just printing in a file) by checking if the label column exists or not
+    if 'label' in df:
+        df["classification_correct"] = df["classification"] == df["label"]
+        accuracy = df["classification_correct"].mean()
+        return accuracy
 
 
 #accuracy = calculate_accuracy(test_df, TreeOfNodes.root)
