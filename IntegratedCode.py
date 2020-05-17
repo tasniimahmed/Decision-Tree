@@ -346,6 +346,7 @@ def classify_example(example, tree):
 def calculate_accuracy(df, tree):
     df["classification"] = df.apply(classify_example_with_Nodes, axis=1, args=(tree,1,))
     df["classification_correct"] = df["classification"] == df["label"]
+    df["classification"].to_csv('classify.csv', encoding='utf-8')
 
     accuracy = df["classification_correct"].mean()
 
