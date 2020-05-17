@@ -6,6 +6,13 @@ from mydict import dictionary
 from Tree_Node import Node, BinaryTree
 import random
 from pprint import pprint
+import pydot
+import os
+from PIL import Image
+from graphviz import Source
+
+G = pydot.Dot(graph_type="digraph")
+
 
 train_df = pd.read_csv("sample_train.csv")
 test_df = pd.read_csv("sample_dev.csv")
@@ -248,30 +255,68 @@ print("                         ********** TREE *************")
 # print('finished training')
 
 
-def classify_example_with_Nodes(example,tree):
+first_time = 1
+
+def classify_example_with_Nodes(example,tree,first_time):
+
+    
+    #first_time_local = first_time
+    global my_node
 
     if tree.left == None and tree.right == None:
         #base case of classification +ve or -Ve
         #print("here")
+        new_node = pydot.Node(tree.value, style="filled", fillcolor="blue")
+        G.add_node(new_node)
+        edge=pydot.Edge(my_node, new_node)
+        my_node=new_node
+        G.add_edge(edge)
         return tree.value
         
     else:
         #it's a question 
         if example[tree.value] == 1: #a yes answer
+
+            if first_time==1:
+                #print("hello1")
+                my_node = pydot.Node(tree.value, style="filled", fillcolor="blue")
+                G.add_node(my_node)
+                #print("************yes*************")
+                first_time=0
+            else:
+                #print("hello2")
+                new_node = pydot.Node(tree.value, style="filled", fillcolor="blue")
+                G.add_node(new_node)
+                edge=pydot.Edge(my_node, new_node, label="yes")
+                my_node=new_node
+                G.add_edge(edge)
             #return tree.left.value
-            return classify_example_with_Nodes(example,tree.right)
+            return classify_example_with_Nodes(example,tree.right,first_time)
         
         elif example[tree.value]==0: #a no answer
+            if first_time==1:
+                #print("hello1 no")
+                my_node = pydot.Node(tree.value, style="filled", fillcolor="blue")
+                G.add_node(my_node)
+                #print("************no*************")
+                first_time=0
+            else:
+                #print("hello2 no")
+                new_node = pydot.Node(tree.value, style="filled", fillcolor="blue")
+                G.add_node(new_node)
+                edge=pydot.Edge(my_node, new_node, label="no")
+                my_node=new_node
+                G.add_edge(edge)
             #return tree.right.value
             #print(tree.right.value)
-            return classify_example_with_Nodes(example,tree.left)
+            return classify_example_with_Nodes(example,tree.left,first_time)
             
 
 
 #example=test_df.iloc[0] #first row of test_df
-#x=classify_example_with_Nodes(example,TreeOfNodes.root)
+#x=classify_example_with_Nodes(example,TreeOfNodes.root,first_time)
 
-#print(x)
+# print(x)
 
 def classify_example(example, tree):
     question = list(tree.keys())[0] #to get the ques
@@ -299,7 +344,7 @@ def classify_example(example, tree):
 
 
 def calculate_accuracy(df, tree):
-    df["classification"] = df.apply(classify_example_with_Nodes, axis=1, args=(tree,))
+    df["classification"] = df.apply(classify_example_with_Nodes, axis=1, args=(tree,1,))
     df["classification_correct"] = df["classification"] == df["label"]
 
     accuracy = df["classification_correct"].mean()
@@ -307,7 +352,9 @@ def calculate_accuracy(df, tree):
     return accuracy
 
 
-accuracy = calculate_accuracy(test_df, TreeOfNodes.root)
-print(accuracy)
+#accuracy = calculate_accuracy(test_df, TreeOfNodes.root)
+#print(accuracy)
+
+G.write_png('example1_graph.png')
 #print(calculate_accuracy(test_df, tree))
 # plt.show(sns.lmplot(x="contains_No", y="contains_Please",  data=test_df , hue="label",fit_reg= False,size = 20,aspect=1.5))
