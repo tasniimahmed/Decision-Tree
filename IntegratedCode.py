@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import io
 from mydict import dictionary
 # import matplotlib.pyplot as plt
 # import seaborn as sns
@@ -8,11 +9,12 @@ import random
 from pprint import pprint
 import pydot
 import os
-from PIL import Image
+# from PIL import Image
+import graphviz
 from graphviz import Source
+Tree_plot = graphviz.Digraph('Tree',format='png')
 
 G = pydot.Dot(graph_type="digraph")
-
 
 train_df = pd.read_csv("sample_train.csv")
 test_df = pd.read_csv("sample_dev.csv")
@@ -111,75 +113,6 @@ bestcolumn, bestvalue = determine_best_split(train_df.values, get_potential_spli
 TreeOfNodes = BinaryTree()
 
 
-def decision_tree_algorithm_without_nodes(df, counter=0, min_samples=2, max_depth=5):
-    # data preparations
-    if counter == 0:
-        global COLUMN_HEADERS
-
-        COLUMN_HEADERS = df.columns
-        data = df.values
-    else:
-        data = df
-
-        # base cases
-        # len of data returns the total number of features
-        # upon reaching 1 feature i will break of the loop
-    if (check_purity(data)) or (len(data) < min_samples) or (counter == max_depth):
-        classification = classify_data(data)
-
-        return classification
-
-
-    # recursive part
-    else:
-        counter += 1
-
-        # helper functions
-        potential_splits = get_potential_splits(data)
-        # get potential splits return a dicitonar of columns with unique values in each column
-        if potential_splits.counter == 0:
-            classification = classify_data(data)
-
-            return classification
-
-        split_column, split_value = determine_best_split(data, potential_splits)
-
-        data_equal, data_not_equal = split_data(data, split_column, split_value)
-        # print(COLUMN_HEADERS[split_column])
-        # print(counter)
-        # instantiate sub-tree
-        feature_name = COLUMN_HEADERS[split_column]
-        # print("Feature Name :: ")
-        # print(feature_name)
-        # question = "{} <= {}".format(feature_name, split_value)
-        question = "{} = {}".format(feature_name, split_value)
-        sub_tree = {question: []}
-
-        # find answers (recursion)
-        yes_answer = decision_tree_algorithm_without_nodes(data_equal, counter, min_samples, max_depth)
-        no_answer = decision_tree_algorithm_without_nodes(data_not_equal, counter, min_samples, max_depth)
-        # print("feature:")
-        # print(feature_name)
-        # print("yes answer : ")
-        # print(yes_answer)
-        # print("no answer : ")
-        # print(no_answer)
-        # print("question:")
-        # print(question)
-
-        # If the answers are the same, then there is no point in asking the qestion.
-        # This could happen when the data is classified even though it is not pure
-        # yet (min_samples or max_depth base cases).
-        if yes_answer == no_answer:
-            sub_tree = yes_answer
-
-        else:
-            sub_tree[question].append(yes_answer)
-            sub_tree[question].append(no_answer)
-            # print("************* I REACHED THIS CONDITION AND CONCATENATED FROM IT")
-        return sub_tree
-
-
 def decision_tree_algorithm_with_nodes(df, current_node, counter=0, min_samples=2, max_depth=5):
     # data preparations
     if counter == 0:
@@ -224,15 +157,16 @@ def decision_tree_algorithm_with_nodes(df, current_node, counter=0, min_samples=
 
         if current_node is None:
             current_node = Node(feature_name)
-        current_node.right = decision_tree_algorithm_with_nodes(data_equal, current_node.right,counter, min_samples, max_depth)
-        current_node.left = decision_tree_algorithm_with_nodes(data_not_equal, current_node.left, counter, min_samples, max_depth)
+        current_node.right = decision_tree_algorithm_with_nodes(data_equal, current_node.right, counter, min_samples,
+                                                                max_depth)
+        current_node.left = decision_tree_algorithm_with_nodes(data_not_equal, current_node.left, counter, min_samples,
+                                                               max_depth)
 
         # If the answers are the same, then there is no point in asking the qestion.
         # This could happen when the data is classified even though it is not pure
         # yet (min_samples or max_depth base cases).
         if current_node.right == current_node.left:
             current_node.value = current_node.right.value
-        
 
         # else:
         #     TreeOfNodes.insert(yes_node,'yes')
@@ -240,13 +174,19 @@ def decision_tree_algorithm_with_nodes(df, current_node, counter=0, min_samples=
 
         return current_node
 
+
 TreeOfNodes.root
-#tree = decision_tree_algorithm_without_nodes(train_df,  max_depth=5)
 TreeOfNodes.root = decision_tree_algorithm_with_nodes(train_df, TreeOfNodes.root, max_depth=5)
-#pprint(tree)
-print("                         ********** TREE *************")
-#print(TreeOfNodes.root)
-#print(TreeOfNodes.root)
+# print("Column headers" + str(len(COLUMN_HEADERS)))
+# print(COLUMN_HEADERS.values)
+
+
+
+# pprint(tree)
+# print("                         ********** TREE *************")
+# print(TreeOfNodes.root)
+
+# print(TreeOfNodes.root)
 
 # decision_tree_algorithm_with_nodes(train_df, TreeOfNodes, max_depth=5)
 # print("The value of root : ")
@@ -257,69 +197,67 @@ print("                         ********** TREE *************")
 
 first_time = 1
 
-def classify_example_with_Nodes(example,tree,first_time):
 
-    
-    #first_time_local = first_time
+def classify_example_with_Nodes(example, tree, first_time):
+    # first_time_local = first_time
     global my_node
 
     if tree.left == None and tree.right == None:
-        #base case of classification +ve or -Ve
-        #print("here")
+        # base case of classification +ve or -Ve
+        # print("here")
         new_node = pydot.Node(tree.value, style="filled", fillcolor="blue")
         G.add_node(new_node)
-        edge=pydot.Edge(my_node, new_node)
-        my_node=new_node
+        edge = pydot.Edge(my_node, new_node)
+        my_node = new_node
         G.add_edge(edge)
         return tree.value
-        
+
     else:
-        #it's a question 
-        if example[tree.value] == 1: #a yes answer
+        # it's a question
+        if example[tree.value] == 1:  # a yes answer
 
-            if first_time==1:
-                #print("hello1")
+            if first_time == 1:
+                # print("hello1")
                 my_node = pydot.Node(tree.value, style="filled", fillcolor="blue")
                 G.add_node(my_node)
-                #print("************yes*************")
-                first_time=0
+                # print("************yes*************")
+                first_time = 0
             else:
-                #print("hello2")
+                # print("hello2")
                 new_node = pydot.Node(tree.value, style="filled", fillcolor="blue")
                 G.add_node(new_node)
-                edge=pydot.Edge(my_node, new_node, label="yes")
-                my_node=new_node
+                edge = pydot.Edge(my_node, new_node, label="yes")
+                my_node = new_node
                 G.add_edge(edge)
-            #return tree.left.value
-            return classify_example_with_Nodes(example,tree.right,first_time)
-        
-        elif example[tree.value]==0: #a no answer
-            if first_time==1:
-                #print("hello1 no")
+            # return tree.left.value
+            return classify_example_with_Nodes(example, tree.right, first_time)
+
+        elif example[tree.value] == 0:  # a no answer
+            if first_time == 1:
+                # print("hello1 no")
                 my_node = pydot.Node(tree.value, style="filled", fillcolor="blue")
                 G.add_node(my_node)
-                #print("************no*************")
-                first_time=0
+                # print("************no*************")
+                first_time = 0
             else:
-                #print("hello2 no")
+                # print("hello2 no")
                 new_node = pydot.Node(tree.value, style="filled", fillcolor="blue")
                 G.add_node(new_node)
-                edge=pydot.Edge(my_node, new_node, label="no")
-                my_node=new_node
+                edge = pydot.Edge(my_node, new_node, label="no")
+                my_node = new_node
                 G.add_edge(edge)
-            #return tree.right.value
-            #print(tree.right.value)
-            return classify_example_with_Nodes(example,tree.left,first_time)
-            
+            # return tree.right.value
+            # print(tree.right.value)
+            return classify_example_with_Nodes(example, tree.left, first_time)
 
 
-#example=test_df.iloc[0] #first row of test_df
-#x=classify_example_with_Nodes(example,TreeOfNodes.root,first_time)
+# example=test_df.iloc[0] #first row of test_df
+# x=classify_example_with_Nodes(example,TreeOfNodes.root,first_time)
 
 # print(x)
 
 def classify_example(example, tree):
-    question = list(tree.keys())[0] #to get the ques
+    question = list(tree.keys())[0]  # to get the ques
     feature_name, comparison_operator, value = question.split()
 
     # ask question
@@ -344,20 +282,65 @@ def classify_example(example, tree):
 
 
 def calculate_accuracy(df, tree):
-    #applying the classification function on the given df
-    df["classification"] = df.apply(classify_example_with_Nodes, axis=1, args=(tree,))
-    #writing the result of classification in a file
-    df["classification"].to_csv('classify.csv', encoding='utf-8')
-    #check if we want to calculate the accuracy or not (just printing in a file) by checking if the label column exists or not
-    if 'label' in df:
-        df["classification_correct"] = df["classification"] == df["label"]
-        accuracy = df["classification_correct"].mean()
-        return accuracy
+    df["classification"] = df.apply(classify_example_with_Nodes, axis=1, args=(tree, 1,))
+    df["classification_correct"] = df["classification"] == df["label"]
+
+    accuracy = df["classification_correct"].mean()
+
+    return accuracy
 
 
-#accuracy = calculate_accuracy(test_df, TreeOfNodes.root)
-#print(accuracy)
+accuracy = calculate_accuracy(test_df, TreeOfNodes.root)
+print(accuracy)
 
+# def draw_tree(count = 0,node = TreeOfNodes.root):
+#     count = count +1
+#     if node.right is not None or node.left is not None:
+#         if node.right.value == node.left.value:
+#             Tree_plot.node(node.right.value, node.right.value)
+#             Tree_plot.edge(node.value, node.right.value)
+#         elif node.right.value =='Positive' or node.left.value == 'Positive' or node.right.value =='Negative' or node.left.value == 'Negative':
+#             Tree_plot.node(node.value,node.value)
+#             Tree_plot.node(node.right.value+'right',node.right.value)
+#             Tree_plot.node(node.left.value+'left', node.left.value)
+#             Tree_plot.edge(node.value,node.right.value+'right')
+#             Tree_plot.edge(node.value,node.left.value+'left')
+#         else:
+#             Tree_plot.node(node.value,node.value)
+#             Tree_plot.node(node.right.value,node.right.value)
+#             Tree_plot.node(node.left.value, node.left.value)
+#             Tree_plot.edge(node.value,node.right.value)
+#             Tree_plot.edge(node.value,node.left.value)
+#             draw_tree(count,node = node.left)
+#             draw_tree(count,node = node.right)
+def draw_tree(leftnode = TreeOfNodes.root.left, node = TreeOfNodes.root, rightnode = TreeOfNodes.root.right):
+
+
+    if node.right is not None or node.left is not None:
+        if node.right.value == node.left.value:
+            # print(node.right.value)
+            Tree_plot.node(node.right.value+node.value, node.right.value)
+            Tree_plot.edge(node.value, node.right.value+node.value, label="Yes or No")
+        else:
+            # print('contains_'+node.value.split('contains_')[1])
+            Tree_plot.node(node.value,'contains_'+node.value.split('contains_')[1])
+            Tree_plot.node(node.left.value + node.value, node.left.value)
+            Tree_plot.node(node.right.value + node.value ,node.right.value)
+
+            Tree_plot.edge(node.value,node.right.value + node.value,label="Yes")
+            Tree_plot.edge(node.value,node.left.value + node.value,label= "No")
+            node.left.value = node.left.value + node.value
+            node.right.value = node.right.value + node.value
+            draw_tree(leftnode = leftnode.left, node= leftnode,rightnode = leftnode.right)
+            draw_tree(leftnode = rightnode.left, node= rightnode,rightnode = rightnode.right)
+    # elif node.right is not None:
+    #     # continue tracing this node
+    # elif node.left is not None:
+    #     #continue tracing
+draw_tree()
 G.write_png('example1_graph.png')
-#print(calculate_accuracy(test_df, tree))
+
+
+Tree_plot.render()
+# print(calculate_accuracy(test_df, tree))
 # plt.show(sns.lmplot(x="contains_No", y="contains_Please",  data=test_df , hue="label",fit_reg= False,size = 20,aspect=1.5))
