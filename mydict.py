@@ -63,19 +63,19 @@ class dictionary:
                 print(i)
 
 
-mydict = dictionary()
-if(mydict.counter == 0):
-    print("zero")
-mydict.add(3,[2.5,2])
-if(mydict.counter == 0):
-    print("zero")
-else:
-    print("one")
+# mydict = dictionary()
+# if(mydict.counter == 0):
+#     print("zero")
+# mydict.add(3,[2.5,2])
+# if(mydict.counter == 0):
+#     print("zero")
+# else:
+#     print("one")
 #mydict.add('T','Tasnim')
 #mydict.add ('s', 333)
 #x=mydict.delete('T')
 #y= mydict.get('s')
-mydict.print()
+# mydict.print()
 #print(x)
 #print(y)
 
