@@ -22,7 +22,7 @@ column2 = [[sg.Text(' ' * 30, size=(None, 1))],
            [sg.Text(' ' * 30, size=(None, 1))],
            [sg.Button('Show accuracy', font='Arial', size=(16, None), button_color=('white', '#3f3f44'), )],
            [sg.Text(' ' * 30, size=(None, 1))],
-           [sg.FileBrowse('Show classification', font='Arial', size=(16, None), button_color=('white', '#3f3f44'), )]]
+           [sg.Button('Classify', font='Arial', size=(16, None), button_color=('white', '#3f3f44'), )]]
 column3 = [[sg.Multiline('This is the log', size=(45, 20), key='-OUTPUT-'+sg.WRITE_ONLY_KEY)],
            ]
 column4 = [[sg.Button('Reset', font='Arial', size=(16, None), button_color=('black', '#fdcb9e'))],
@@ -79,6 +79,30 @@ while True:
         window['-OUTPUT-'+sg.WRITE_ONLY_KEY].print("accuracy is:",text_color='black')
         window['-OUTPUT-'+sg.WRITE_ONLY_KEY].print(acc,text_color='black')
         window['-OUTPUT-'+sg.WRITE_ONLY_KEY].print("Execution Finished",text_color='black')
+    
+    elif event is 'Classify':
+        window['-OUTPUT-'+sg.WRITE_ONLY_KEY].print(" ",text_color='black')
+        window['-OUTPUT-'+sg.WRITE_ONLY_KEY].print("Starting the execution",text_color='black')
+        
+        Train_path = list(values.values())[0]
+        print("Train path : " + Train_path)
+        Test_path = list(values.values())[1]
+        print("Test_path :" + Test_path)
+        
+        test_df = pd.read_csv(Test_path)
+        train_df = pd.read_csv(Train_path)
+        train_df = train_df.drop("reviews.text", axis=1)
+        train_df = train_df.rename(columns={"rating": "label"})
+        test_df = test_df.drop("reviews.text", axis=1)
+        test_df = test_df.rename(columns={"rating": "label"})
+        
+        TreeOfNodes =  BinaryTree()
+        TreeOfNodes.root = decision_tree_algorithm_with_nodes(train_df, TreeOfNodes.root, max_depth=7)
+        acc = calculate_accuracy(test_df,TreeOfNodes.root)
+        print(acc)
+        window['-OUTPUT-'+sg.WRITE_ONLY_KEY].print("check classify.csv file",text_color='black')
+        window['-OUTPUT-'+sg.WRITE_ONLY_KEY].print("Execution Finished",text_color='black')
+
     
 
 
