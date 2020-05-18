@@ -4,6 +4,7 @@ from Tree_Node import Node, BinaryTree
 import numpy as np
 import pandas as pd
 from mydict import dictionary
+import csv
 
 
 # Column layout
@@ -53,11 +54,11 @@ while True:
         rev=int(Review_text)
 
         arr=list(Review_text)
-        print(type(arr[0]))
         print(arr)
-        test2_df = pd.read_csv("input.csv")
-        test2_df.iloc[0]=arr
-        print(test2_df.iloc[0])
+        fl = open('input.csv', 'a+')
+        writer = csv.writer(fl)
+        writer.writerow(arr) 
+        fl.close()    
         print("done")
         review_flag=1
 
@@ -101,6 +102,15 @@ while True:
             train_df = train_df.drop("reviews.text", axis=1)
             train_df = train_df.rename(columns={"rating": "label"})
             review_flag=0
+            TreeOfNodes =  BinaryTree()
+            TreeOfNodes.root = decision_tree_algorithm_with_nodes(train_df, TreeOfNodes.root, max_depth=7)
+            acc = calculate_accuracy(test_df,TreeOfNodes.root)
+            classif=pd.read_csv("classify.csv")
+            print(classif)
+            window['-OUTPUT-'+sg.WRITE_ONLY_KEY].print(classif["classification"],text_color='black')
+            window['-OUTPUT-'+sg.WRITE_ONLY_KEY].print("you can check classify.csv file",text_color='black')
+            window['-OUTPUT-'+sg.WRITE_ONLY_KEY].print("Execution Finished",text_color='black')
+
         else:
             Train_path = list(values.values())[0]
             ("Train path : " + Train_path)
@@ -114,12 +124,12 @@ while True:
             test_df = test_df.drop("reviews.text", axis=1)
             test_df = test_df.rename(columns={"rating": "label"})
         
-        TreeOfNodes =  BinaryTree()
-        TreeOfNodes.root = decision_tree_algorithm_with_nodes(train_df, TreeOfNodes.root, max_depth=7)
-        acc = calculate_accuracy(test_df,TreeOfNodes.root)
-        print(acc)
-        window['-OUTPUT-'+sg.WRITE_ONLY_KEY].print("check classify.csv file",text_color='black')
-        window['-OUTPUT-'+sg.WRITE_ONLY_KEY].print("Execution Finished",text_color='black')
+            TreeOfNodes =  BinaryTree()
+            TreeOfNodes.root = decision_tree_algorithm_with_nodes(train_df, TreeOfNodes.root, max_depth=7)
+            acc = calculate_accuracy(test_df,TreeOfNodes.root)
+            print(acc)
+            window['-OUTPUT-'+sg.WRITE_ONLY_KEY].print("check classify.csv file",text_color='black')
+            window['-OUTPUT-'+sg.WRITE_ONLY_KEY].print("Execution Finished",text_color='black')
 
     
 
