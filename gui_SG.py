@@ -1,10 +1,11 @@
 import PySimpleGUI as sg
-from IntegratedCode import calculate_accuracy,decision_tree_algorithm_with_nodes
+from Decision import calculate_accuracy,decision_tree_algorithm_with_nodes
 from Tree_Node import Node, BinaryTree
 import numpy as np
 import pandas as pd
 from mydict import dictionary
 import csv
+from datetime import datetime
 
 
 # Column layout
@@ -66,9 +67,11 @@ while True:
         print("Reset Triggered , do something !")
 
     elif event is 'Show accuracy':
-        window['-OUTPUT-'+sg.WRITE_ONLY_KEY].print(" ",text_color='black')
-        window['-OUTPUT-'+sg.WRITE_ONLY_KEY].print("Starting the execution",text_color='black')
-        
+        now = datetime.now()
+        current_time = now.strftime("%H:%M:%S")
+        window['-OUTPUT-' + sg.WRITE_ONLY_KEY].print(" ", text_color='black')
+        window['-OUTPUT-' + sg.WRITE_ONLY_KEY].print("Starting the execution at : " + current_time, text_color='black')
+
         Train_path = list(values.values())[0]
         print("Train path : " + Train_path)
         Test_path = list(values.values())[1]
@@ -81,17 +84,21 @@ while True:
         test_df = test_df.drop("reviews.text", axis=1)
         test_df = test_df.rename(columns={"rating": "label"})
         
-        TreeOfNodes =  BinaryTree()
+        TreeOfNodes = BinaryTree()
         TreeOfNodes.root = decision_tree_algorithm_with_nodes(train_df, TreeOfNodes.root, max_depth=7)
-        acc = calculate_accuracy(test_df,TreeOfNodes.root)
+        acc = calculate_accuracy(test_df, TreeOfNodes.root) * 100
+        acc = round(acc, 3)
         print(acc)
-        window['-OUTPUT-'+sg.WRITE_ONLY_KEY].print("accuracy is:",text_color='black')
-        window['-OUTPUT-'+sg.WRITE_ONLY_KEY].print(acc,text_color='black')
-        window['-OUTPUT-'+sg.WRITE_ONLY_KEY].print("Execution Finished",text_color='black')
-    
+        now = datetime.now()
+        current_time = now.strftime("%H:%M:%S")
+        window['-OUTPUT-' + sg.WRITE_ONLY_KEY].print("accuracy is: " + str(acc) + '%', text_color='black')
+        window['-OUTPUT-' + sg.WRITE_ONLY_KEY].print("Execution Finished At : " + current_time, text_color='black')
+
     elif event is 'Classify':
-        window['-OUTPUT-'+sg.WRITE_ONLY_KEY].print(" ",text_color='black')
-        window['-OUTPUT-'+sg.WRITE_ONLY_KEY].print("Starting the execution",text_color='black')
+        now = datetime.now()
+        current_time = now.strftime("%H:%M:%S")
+        window['-OUTPUT-' + sg.WRITE_ONLY_KEY].print(" ", text_color='black')
+        window['-OUTPUT-' + sg.WRITE_ONLY_KEY].print("Starting the execution at : " + current_time, text_color='black')
 
         if review_flag == 1: #if he entered a text
             print("here")
@@ -104,12 +111,15 @@ while True:
             review_flag=0
             TreeOfNodes =  BinaryTree()
             TreeOfNodes.root = decision_tree_algorithm_with_nodes(train_df, TreeOfNodes.root, max_depth=7)
-            acc = calculate_accuracy(test_df,TreeOfNodes.root)
+            acc = calculate_accuracy(test_df,TreeOfNodes.root) * 100
+            acc = round(acc,3)
             classif=pd.read_csv("classify.csv")
             print(classif)
+            now = datetime.now()
+            current_time = now.strftime("%H:%M:%S")
             window['-OUTPUT-'+sg.WRITE_ONLY_KEY].print(classif["classification"],text_color='black')
             window['-OUTPUT-'+sg.WRITE_ONLY_KEY].print("you can check classify.csv file",text_color='black')
-            window['-OUTPUT-'+sg.WRITE_ONLY_KEY].print("Execution Finished",text_color='black')
+            window['-OUTPUT-' + sg.WRITE_ONLY_KEY].print("Execution Finished At : " + current_time, text_color='black')
 
         else:
             Train_path = list(values.values())[0]
@@ -126,10 +136,13 @@ while True:
         
             TreeOfNodes =  BinaryTree()
             TreeOfNodes.root = decision_tree_algorithm_with_nodes(train_df, TreeOfNodes.root, max_depth=7)
-            acc = calculate_accuracy(test_df,TreeOfNodes.root)
-            print(acc)
+            # acc = calculate_accuracy(test_df,TreeOfNodes.root) * 100
+            # print(acc)
+            # acc = round(acc, 3)
+            now = datetime.now()
+            current_time = now.strftime("%H:%M:%S")
             window['-OUTPUT-'+sg.WRITE_ONLY_KEY].print("check classify.csv file",text_color='black')
-            window['-OUTPUT-'+sg.WRITE_ONLY_KEY].print("Execution Finished",text_color='black')
+            window['-OUTPUT-' + sg.WRITE_ONLY_KEY].print("Execution Finished At : " + current_time, text_color='black')
 
     
 
