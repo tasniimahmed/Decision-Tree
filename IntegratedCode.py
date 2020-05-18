@@ -186,8 +186,6 @@ def decision_tree_algorithm_with_nodes(df, current_node, counter=0, min_samples=
 # print("                         ********** TREE *************")
 # print(TreeOfNodes.root)
 
-# print(TreeOfNodes.root)
-
 # decision_tree_algorithm_with_nodes(train_df, TreeOfNodes, max_depth=5)
 # print("The value of root : ")
 # print(TreeOfNodes.root)
@@ -197,6 +195,7 @@ def decision_tree_algorithm_with_nodes(df, current_node, counter=0, min_samples=
 
 first_time = 1
 
+#classify without drawing
 def classify_example_with_Nodes(example,tree):
 
     if tree.left == None and tree.right == None:
@@ -302,6 +301,8 @@ def calculate_accuracy(df, tree):
     df["classification"] = df.apply(classify_example_with_Nodes, axis=1, args=(tree,))
     #writing the result of classification in a file
     df["classification"].to_csv('classify.csv', encoding='utf-8')
+    print(df)
+    print(df["classification"])
     #check if we want to calculate the accuracy or not (just printing in a file) by checking if the label column exists or not
     if 'label' in df:
         df["classification_correct"] = df["classification"] == df["label"]
