@@ -1,12 +1,12 @@
 import PySimpleGUI as sg
-from Decision import calculate_accuracy,decision_tree_algorithm_with_nodes
+from Decision import calculate_accuracy, decision_tree_algorithm_with_nodes
 from Tree_Node import Node, BinaryTree
 import numpy as np
 import pandas as pd
 from mydict import dictionary
 import csv
 from datetime import datetime
-
+from StringFilter import String_filter
 
 # Column layout
 sg.theme('LightGreen3')
@@ -25,7 +25,7 @@ column2 = [[sg.Text(' ' * 30, size=(None, 1))],
            [sg.Button('Show accuracy', font='Arial', size=(16, None), button_color=('white', '#3f3f44'), )],
            [sg.Text(' ' * 30, size=(None, 1))],
            [sg.Button('Classify', font='Arial', size=(16, None), button_color=('white', '#3f3f44'), )]]
-column3 = [[sg.Multiline('This is the log', size=(45, 20), key='-OUTPUT-'+sg.WRITE_ONLY_KEY)],
+column3 = [[sg.Multiline('This is the log', size=(45, 20), key='-OUTPUT-' + sg.WRITE_ONLY_KEY)],
            ]
 column4 = [[sg.Button('Reset', font='Arial', size=(16, None), button_color=('black', '#fdcb9e'))],
            ]
@@ -42,7 +42,7 @@ layout = [[sg.Column(column1, justification='center')], [sg.Column(column2, just
 
 window = sg.Window('Decision Tree', layout, text_justification='left')
 
-review_flag=0
+review_flag = 0
 
 while True:
     event, values = window.read()
@@ -52,18 +52,20 @@ while True:
         break
     elif event is 'Write a review':
         Review_text = sg.popup_get_text('Enter your review')
-        rev=int(Review_text)
-
-        arr=list(Review_text)
+        Review_text = String_filter(Review_text, 0)
+        rev = int(Review_text)
+        print(len(Review_text))
+        arr = list(Review_text)
         print(arr)
         fl = open('input.csv', 'a+')
         writer = csv.writer(fl)
-        writer.writerow(arr) 
-        fl.close()    
+        writer.writerow(arr)
+        fl.close()
         print("done")
-        review_flag=1
+        review_flag = 1
 
     elif event is 'Reset':
+
         print("Reset Triggered , do something !")
 
     elif event is 'Show accuracy':
@@ -76,14 +78,14 @@ while True:
         print("Train path : " + Train_path)
         Test_path = list(values.values())[1]
         print("Test_path :" + Test_path)
-        
+
         test_df = pd.read_csv(Test_path)
         train_df = pd.read_csv(Train_path)
         train_df = train_df.drop("reviews.text", axis=1)
         train_df = train_df.rename(columns={"rating": "label"})
         test_df = test_df.drop("reviews.text", axis=1)
         test_df = test_df.rename(columns={"rating": "label"})
-        
+
         TreeOfNodes = BinaryTree()
         TreeOfNodes.root = decision_tree_algorithm_with_nodes(train_df, TreeOfNodes.root, max_depth=7)
         acc = calculate_accuracy(test_df, TreeOfNodes.root) * 100
@@ -99,26 +101,28 @@ while True:
         current_time = now.strftime("%H:%M:%S")
         window['-OUTPUT-' + sg.WRITE_ONLY_KEY].print(" ", text_color='black')
         window['-OUTPUT-' + sg.WRITE_ONLY_KEY].print("Starting the execution at : " + current_time, text_color='black')
+        Train_path = list(values.values())[0]
+        print("Train path : " + Train_path)
 
-        if review_flag == 1: #if he entered a text
+        if review_flag == 1:  # if he entered a text
             print("here")
-            Test_path="input.csv"
-            Train_path="sample_train.csv"
+            Test_path = "input.csv"
+            Train_path = "sample_train.csv"
             test_df = pd.read_csv(Test_path)
             train_df = pd.read_csv(Train_path)
             train_df = train_df.drop("reviews.text", axis=1)
             train_df = train_df.rename(columns={"rating": "label"})
-            review_flag=0
-            TreeOfNodes =  BinaryTree()
+            review_flag = 0
+            TreeOfNodes = BinaryTree()
             TreeOfNodes.root = decision_tree_algorithm_with_nodes(train_df, TreeOfNodes.root, max_depth=7)
-            acc = calculate_accuracy(test_df,TreeOfNodes.root) * 100
-            acc = round(acc,3)
-            classif=pd.read_csv("classify.csv")
+            acc = calculate_accuracy(test_df, TreeOfNodes.root) * 100
+            acc = round(acc, 3)
+            classif = pd.read_csv("classify.csv")
             print(classif)
             now = datetime.now()
             current_time = now.strftime("%H:%M:%S")
-            window['-OUTPUT-'+sg.WRITE_ONLY_KEY].print(classif["classification"],text_color='black')
-            window['-OUTPUT-'+sg.WRITE_ONLY_KEY].print("you can check classify.csv file",text_color='black')
+            window['-OUTPUT-' + sg.WRITE_ONLY_KEY].print(classif["classification"], text_color='black')
+            window['-OUTPUT-' + sg.WRITE_ONLY_KEY].print("you can check classify.csv file", text_color='black')
             window['-OUTPUT-' + sg.WRITE_ONLY_KEY].print("Execution Finished At : " + current_time, text_color='black')
 
         else:
@@ -133,18 +137,15 @@ while True:
             train_df = train_df.rename(columns={"rating": "label"})
             test_df = test_df.drop("reviews.text", axis=1)
             test_df = test_df.rename(columns={"rating": "label"})
-        
-            TreeOfNodes =  BinaryTree()
+
+            TreeOfNodes = BinaryTree()
             TreeOfNodes.root = decision_tree_algorithm_with_nodes(train_df, TreeOfNodes.root, max_depth=7)
             # acc = calculate_accuracy(test_df,TreeOfNodes.root) * 100
             # print(acc)
             # acc = round(acc, 3)
             now = datetime.now()
             current_time = now.strftime("%H:%M:%S")
-            window['-OUTPUT-'+sg.WRITE_ONLY_KEY].print("check classify.csv file",text_color='black')
+            window['-OUTPUT-' + sg.WRITE_ONLY_KEY].print("check classify.csv file", text_color='black')
             window['-OUTPUT-' + sg.WRITE_ONLY_KEY].print("Execution Finished At : " + current_time, text_color='black')
-
-    
-
 
 window.close()
