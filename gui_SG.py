@@ -52,6 +52,7 @@ while True:
         break
     elif event is 'Write a review':
         Review_text = sg.popup_get_text('Enter your review')
+        window['-OUTPUT-' + sg.WRITE_ONLY_KEY].print("User entered a review : "+Review_text)
         Review_text = String_filter(Review_text, 0)
         rev = int(Review_text)
         print(len(Review_text))
@@ -107,7 +108,7 @@ while True:
         if review_flag == 1:  # if he entered a text
             print("here")
             Test_path = "input.csv"
-            Train_path = "sample_train.csv"
+            Train_path = "ven/sample_train.csv"
             test_df = pd.read_csv(Test_path)
             train_df = pd.read_csv(Train_path)
             train_df = train_df.drop("reviews.text", axis=1)
