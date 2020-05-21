@@ -1,5 +1,5 @@
 import PySimpleGUI as sg
-from Decision import calculate_accuracy, decision_tree_algorithm_with_nodes
+from IntegratedCode import calculate_accuracy, decision_tree_algorithm_with_nodes
 from Tree_Node import Node, BinaryTree
 import numpy as np
 import pandas as pd
@@ -108,7 +108,7 @@ while True:
         if review_flag == 1:  # if he entered a text
             print("here")
             Test_path = "input.csv"
-            Train_path = "ven/sample_train.csv"
+            Train_path = "sample_train.csv"
             test_df = pd.read_csv(Test_path)
             train_df = pd.read_csv(Train_path)
             train_df = train_df.drop("reviews.text", axis=1)
@@ -116,8 +116,8 @@ while True:
             review_flag = 0
             TreeOfNodes = BinaryTree()
             TreeOfNodes.root = decision_tree_algorithm_with_nodes(train_df, TreeOfNodes.root, max_depth=7)
-            acc = calculate_accuracy(test_df, TreeOfNodes.root) * 100
-            acc = round(acc, 3)
+            acc = calculate_accuracy(test_df, TreeOfNodes.root)
+            #acc = round(acc, 3)
             classif = pd.read_csv("classify.csv")
             print(classif)
             now = datetime.now()
@@ -141,7 +141,7 @@ while True:
 
             TreeOfNodes = BinaryTree()
             TreeOfNodes.root = decision_tree_algorithm_with_nodes(train_df, TreeOfNodes.root, max_depth=7)
-            # acc = calculate_accuracy(test_df,TreeOfNodes.root) * 100
+            acc = calculate_accuracy(test_df,TreeOfNodes.root) 
             # print(acc)
             # acc = round(acc, 3)
             now = datetime.now()
