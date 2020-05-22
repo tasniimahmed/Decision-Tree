@@ -7,6 +7,8 @@ from mydict import dictionary
 import csv
 from datetime import datetime
 from StringFilter import String_filter
+import sys
+import subprocess
 
 # Column layout
 sg.theme('LightGreen3')
@@ -25,9 +27,9 @@ column2 = [[sg.Text(' ' * 30, size=(None, 1))],
            [sg.Button('Show accuracy', font='Arial', size=(16, None), button_color=('white', '#3f3f44'), )],
            [sg.Text(' ' * 30, size=(None, 1))],
            [sg.Button('Classify', font='Arial', size=(16, None), button_color=('white', '#3f3f44'), )]]
-column3 = [[sg.Multiline('This is the log', size=(45, 20), key='-OUTPUT-' + sg.WRITE_ONLY_KEY)],
+column3 = [[sg.Multiline('User log data will be displayed here :\n',text_color='#23E000', size=(45, 20), key='-OUTPUT-' + sg.WRITE_ONLY_KEY)],
            ]
-column4 = [[sg.Button('Reset', font='Arial', size=(16, None), button_color=('black', '#fdcb9e'))],
+column4 = [[sg.Button('Show Tree', font='Arial', size=(16, None), button_color=('black', '#fdcb9e'))],
            ]
 column5 = [[sg.Button('Quit', font='Arial', size=(16, None), button_color=('black', '#fdcb9e'))],
 
@@ -43,6 +45,10 @@ layout = [[sg.Column(column1, justification='center')], [sg.Column(column2, just
 window = sg.Window('Decision Tree', layout, text_justification='left')
 
 review_flag = 0
+first_row = ['contains_No', 'contains_Please', 'contains_Thank', 'contains_apologize', 'contains_bad', 'contains_clean', 'contains_comfortable', 'contains_dirty', 'contains_enjoyed', 'contains_friendly', 'contains_glad', 'contains_good', 'contains_great', 'contains_happy', 'contains_hot', 'contains_issues', 'contains_nice', 'contains_noise', 'contains_old', 'contains_poor', 'contains_right', 'contains_small', 'contains_smell', 'contains_sorry', 'contains_wonderful']
+with open('input.csv', 'w+', newline='') as file:
+    writer = csv.writer(file)
+    writer.writerow(first_row)
 
 while True:
     event, values = window.read()
@@ -50,20 +56,28 @@ while True:
     print(values)
     if event in (sg.WIN_CLOSED, 'Quit'):
         break
+    elif event is 'Show Tree':
+        imageViewerFromCommandLine = {'linux': 'xdg-open',
+                                      'win32': 'explorer',
+                                      'darwin': 'open'}[sys.platform]
+        subprocess.run([imageViewerFromCommandLine, 'Tree.gv.png'])
+        print('show')
     elif event is 'Write a review':
         Review_text = sg.popup_get_text('Enter your review')
-        window['-OUTPUT-' + sg.WRITE_ONLY_KEY].print("User entered a review : "+Review_text)
-        Review_text = String_filter(Review_text, 0)
-        rev = int(Review_text)
-        print(len(Review_text))
-        arr = list(Review_text)
-        print(arr)
-        fl = open('input.csv', 'a+')
-        writer = csv.writer(fl)
-        writer.writerow(arr)
-        fl.close()
-        print("done")
-        review_flag = 1
+        if Review_text is not None:
+            window['-OUTPUT-' + sg.WRITE_ONLY_KEY].print("User entered a review : "+Review_text, text_color='black')
+            Review_text = String_filter(Review_text, 0)
+
+            rev = int(Review_text)
+            print(len(Review_text))
+            arr = list(Review_text)
+            print(arr)
+            fl = open('input.csv', 'a+')
+            writer = csv.writer(fl)
+            writer.writerow(arr)
+            fl.close()
+            print("done")
+            review_flag = 1
 
     elif event is 'Reset':
 
@@ -141,7 +155,7 @@ while True:
 
             TreeOfNodes = BinaryTree()
             TreeOfNodes.root = decision_tree_algorithm_with_nodes(train_df, TreeOfNodes.root, max_depth=7)
-            acc = calculate_accuracy(test_df,TreeOfNodes.root) 
+            acc = calculate_accuracy(test_df,TreeOfNodes.root)
             # print(acc)
             # acc = round(acc, 3)
             now = datetime.now()
