@@ -140,8 +140,13 @@ while True:
             window['-OUTPUT-' + sg.WRITE_ONLY_KEY].print("you can check classify.csv file", text_color='black')
             window['-OUTPUT-' + sg.WRITE_ONLY_KEY].print("Execution Finished At : " + current_time, text_color='black')
             window['-OUTPUT-' + sg.WRITE_ONLY_KEY].print("The path of the review:" , text_color='black')
+            final_path= ""
             for i in my_path:
-                window['-OUTPUT-' + sg.WRITE_ONLY_KEY].print(i, text_color='black')
+                if i == "Positive" or i == "Negative":
+                    final_path+=i
+                else:
+                    final_path+=i+"->"
+            window['-OUTPUT-' + sg.WRITE_ONLY_KEY].print(final_path, text_color='black')
 
         else:
             Train_path = list(values.values())[0]
