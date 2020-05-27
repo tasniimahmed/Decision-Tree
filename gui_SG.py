@@ -1,5 +1,5 @@
 import PySimpleGUI as sg
-from IntegratedCode import calculate_accuracy, decision_tree_algorithm_with_nodes
+from IntegratedCode import calculate_accuracy, decision_tree_algorithm_with_nodes, my_path
 from Tree_Node import Node, BinaryTree
 import numpy as np
 import pandas as pd
@@ -139,6 +139,9 @@ while True:
             window['-OUTPUT-' + sg.WRITE_ONLY_KEY].print(classif["classification"], text_color='black')
             window['-OUTPUT-' + sg.WRITE_ONLY_KEY].print("you can check classify.csv file", text_color='black')
             window['-OUTPUT-' + sg.WRITE_ONLY_KEY].print("Execution Finished At : " + current_time, text_color='black')
+            window['-OUTPUT-' + sg.WRITE_ONLY_KEY].print("The path of the review:" , text_color='black')
+            for i in my_path:
+                window['-OUTPUT-' + sg.WRITE_ONLY_KEY].print(i, text_color='black')
 
         else:
             Train_path = list(values.values())[0]

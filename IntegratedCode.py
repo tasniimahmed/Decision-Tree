@@ -40,7 +40,7 @@ def classify_data(data):
     unique_classes, counts_unique_classes = np.unique(label_column, return_counts=True)
 
     index = counts_unique_classes.argmax()
-    # return positive or negative based of majority
+    # return positive or negative based on majority
     classification = unique_classes[index]
 
     return classification
@@ -194,20 +194,26 @@ def decision_tree_algorithm_with_nodes(df, current_node, counter=0, min_samples=
 
 
 first_time = 1
-
+my_path= []
 #classify without drawing
 def classify_example_with_Nodes(example,tree):
 
     if tree.left == None and tree.right == None:
         #base case of classification +ve or -Ve
+        print(tree.value)
+        my_path.append(tree.value)
         return tree.value
         
     else:
         #it's a question 
         if example[tree.value] == 1: #a no answer
+            print(tree.value)
+            my_path.append(tree.value)
             return classify_example_with_Nodes(example,tree.right)
         
         elif example[tree.value]==0: #a yes answer
+            print(tree.value)
+            my_path.append(tree.value)
             return classify_example_with_Nodes(example,tree.left)
 
 #Tasnim commented this
@@ -268,30 +274,6 @@ def classify_example_with_Nodes(example,tree):
 # x=classify_example_with_Nodes(example,TreeOfNodes.root,first_time)
 
 # print(x)
-
-def classify_example(example, tree):
-    question = list(tree.keys())[0]  # to get the ques
-    feature_name, comparison_operator, value = question.split()
-
-    # ask question
-    if comparison_operator == "=":
-        print(feature_name)
-        print(str(example[feature_name]))
-        # if example[feature_name] <= float(value):
-        if str(example[feature_name]) == value:
-            answer = tree[question][0]
-        else:
-            answer = tree[question][1]
-
-    # base case
-    if not isinstance(answer, dict):
-        return answer
-
-    # recursive part
-    else:
-        residual_tree = answer
-        print(residual_tree)
-        return classify_example(example, residual_tree)
 
 
 def calculate_accuracy(df, tree):
