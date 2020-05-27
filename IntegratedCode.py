@@ -200,19 +200,16 @@ def classify_example_with_Nodes(example,tree):
 
     if tree.left == None and tree.right == None:
         #base case of classification +ve or -Ve
-        print(tree.value)
         my_path.append(tree.value)
         return tree.value
         
     else:
         #it's a question 
         if example[tree.value] == 1: #a no answer
-            print(tree.value)
             my_path.append(tree.value)
             return classify_example_with_Nodes(example,tree.right)
         
         elif example[tree.value]==0: #a yes answer
-            print(tree.value)
             my_path.append(tree.value)
             return classify_example_with_Nodes(example,tree.left)
 
