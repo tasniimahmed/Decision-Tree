@@ -27,7 +27,9 @@ column2 = [[sg.Text(' ' * 30, size=(None, 1))],
            [sg.Text(' ' * 30, size=(None, 1))],
            [sg.Button('Show accuracy', font='Arial', size=(16, None), button_color=('white', '#3f3f44'), )],
            [sg.Text(' ' * 30, size=(None, 1))],
-           [sg.Button('Classify', font='Arial', size=(16, None), button_color=('white', '#3f3f44'), )]]
+           [sg.Button('Classify', font='Arial', size=(16, None), button_color=('white', '#3f3f44'), )],
+            [sg.Text(' ' * 25, size=(None, 1))],
+           [sg.Text(' ' * 5, size=(None, 1)),sg.Combo(['1', '2','3','4','5','6','7','8'],key='Depth'),sg.Text('Depth')]]
 column3 = [[sg.Multiline('User log data will be displayed here :\n',text_color='#23E000', size=(45, 20), key='-OUTPUT-' + sg.WRITE_ONLY_KEY)],
            ]
 column4 = [[sg.Button('Show Tree', font='Arial', size=(16, None), button_color=('black', '#fdcb9e'))],
@@ -53,9 +55,10 @@ with open('input.csv', 'w+', newline='') as file:
 
 while True:
     event, values = window.read()
-    print(event, values)
-    print(values)
+
     if event in (sg.WIN_CLOSED, 'Quit'):
+        print(event, values)
+        print(values)
         break
     elif event is 'Show Tree':
         imageViewerFromCommandLine = {'linux': 'xdg-open',
@@ -85,6 +88,11 @@ while True:
         print("Reset Triggered , do something !")
 
     elif event is 'Show accuracy':
+        if list(values.values())[2] is '':
+            depth = 5
+        else:
+            depth = int(list(values.values())[2])
+        Tree_plot = graphviz.Digraph('Tree', format='png')
         now = datetime.now()
         current_time = now.strftime("%H:%M:%S")
         window['-OUTPUT-' + sg.WRITE_ONLY_KEY].print(" ", text_color='black')
@@ -103,7 +111,7 @@ while True:
         test_df = test_df.rename(columns={"rating": "label"})
 
         TreeOfNodes = BinaryTree()
-        TreeOfNodes.root = decision_tree_algorithm_with_nodes(train_df, TreeOfNodes.root, max_depth=7)
+        TreeOfNodes.root = decision_tree_algorithm_with_nodes(train_df, TreeOfNodes.root, max_depth=depth)
         acc = calculate_accuracy(test_df, TreeOfNodes.root) * 100
         acc = round(acc, 3)
         print(acc)
@@ -135,6 +143,11 @@ while True:
         Tree_plot.render()
 
     elif event is 'Classify':
+        if list(values.values())[2] is '':
+            depth = 5
+        else:
+            depth = int(list(values.values())[2])
+        Tree_plot = graphviz.Digraph('Tree', format='png')
         now = datetime.now()
         current_time = now.strftime("%H:%M:%S")
         window['-OUTPUT-' + sg.WRITE_ONLY_KEY].print(" ", text_color='black')
@@ -152,7 +165,7 @@ while True:
             train_df = train_df.rename(columns={"rating": "label"})
             review_flag = 0
             TreeOfNodes = BinaryTree()
-            TreeOfNodes.root = decision_tree_algorithm_with_nodes(train_df, TreeOfNodes.root, max_depth=7)
+            TreeOfNodes.root = decision_tree_algorithm_with_nodes(train_df, TreeOfNodes.root, max_depth=depth)
             acc = calculate_accuracy(test_df, TreeOfNodes.root)
             #acc = round(acc, 3)
             classif = pd.read_csv("classify.csv")
