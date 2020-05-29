@@ -9,7 +9,8 @@ from datetime import datetime
 from StringFilter import String_filter
 import sys
 import subprocess
-
+import graphviz
+Tree_plot = graphviz.Digraph('Tree',format='png')
 # Column layout
 sg.theme('LightGreen3')
 Review_text = ""
@@ -110,6 +111,28 @@ while True:
         current_time = now.strftime("%H:%M:%S")
         window['-OUTPUT-' + sg.WRITE_ONLY_KEY].print("accuracy is: " + str(acc) + '%', text_color='black')
         window['-OUTPUT-' + sg.WRITE_ONLY_KEY].print("Execution Finished At : " + current_time, text_color='black')
+        def draw_tree(leftnode = TreeOfNodes.root.left, node = TreeOfNodes.root, rightnode = TreeOfNodes.root.right):
+
+            if node.right is not None or node.left is not None:
+                if node.right.value == node.left.value:
+                    # print(node.right.value)
+                    Tree_plot.node(node.right.value+node.value, node.right.value)
+                    Tree_plot.edge(node.value, node.right.value+node.value, label="Yes or No")
+                else:
+                    # print('contains_'+node.value.split('contains_')[1])
+                    Tree_plot.node(node.value,'contains_'+node.value.split('contains_')[1])
+                    Tree_plot.node(node.left.value + node.value, node.left.value)
+                    Tree_plot.node(node.right.value + node.value ,node.right.value)
+
+                    Tree_plot.edge(node.value,node.right.value + node.value,label="Yes")
+                    Tree_plot.edge(node.value,node.left.value + node.value,label= "No")
+                    node.left.value = node.left.value + node.value
+                    node.right.value = node.right.value + node.value
+                    draw_tree(leftnode = leftnode.left, node= leftnode,rightnode = leftnode.right)
+                    draw_tree(leftnode = rightnode.left, node= rightnode,rightnode = rightnode.right)
+
+        draw_tree()
+        Tree_plot.render()
 
     elif event is 'Classify':
         now = datetime.now()
