@@ -28,7 +28,7 @@ column2 = [[sg.Text(' ' * 30, size=(None, 1))],
            [sg.Button('Show accuracy', font='Arial', size=(16, None), button_color=('white', '#3f3f44'), )],
            [sg.Text(' ' * 30, size=(None, 1))],
            [sg.Button('Classify', font='Arial', size=(16, None), button_color=('white', '#3f3f44'), )],
-            [sg.Text(' ' * 25, size=(None, 1))],
+            [sg.Text(' ' * 15, size=(None, 1))],
            [sg.Text(' ' * 5, size=(None, 1)),sg.Combo(['1', '2','3','4','5','6','7','8'],key='Depth'),sg.Text('Depth')]]
 column3 = [[sg.Multiline('User log data will be displayed here :\n',text_color='#23E000', size=(45, 20), key='-OUTPUT-' + sg.WRITE_ONLY_KEY)],
            ]
@@ -52,7 +52,6 @@ first_row = ['contains_No', 'contains_Please', 'contains_Thank', 'contains_apolo
 with open('input.csv', 'w+', newline='') as file:
     writer = csv.writer(file)
     writer.writerow(first_row)
-
 while True:
     event, values = window.read()
 
@@ -69,9 +68,11 @@ while True:
     elif event is 'Write a review':
         Review_text = sg.popup_get_text('Enter your review')
         if Review_text is not None:
-            window['-OUTPUT-' + sg.WRITE_ONLY_KEY].print("User entered a review : "+Review_text, text_color='black')
+            window['-OUTPUT-' + sg.WRITE_ONLY_KEY].print("\nUser entered a review : "+Review_text, text_color='black')
             Review_text = String_filter(Review_text, 0)
-
+            with open('input.csv', 'w+', newline='') as file:
+                writer = csv.writer(file)
+                writer.writerow(first_row)
             rev = int(Review_text)
             print(len(Review_text))
             arr = list(Review_text)
@@ -143,6 +144,7 @@ while True:
         Tree_plot.render()
 
     elif event is 'Classify':
+
         if list(values.values())[2] is '':
             depth = 5
         else:
@@ -156,7 +158,8 @@ while True:
         print("Train path : " + Train_path)
 
         if review_flag == 1:  # if he entered a text
-            print("here")
+            my_path.clear()
+            print("here review")
             Test_path = "input.csv"
             Train_path = "sample_train.csv"
             test_df = pd.read_csv(Test_path)
@@ -183,6 +186,7 @@ while True:
                 else:
                     final_path+=i+"->"
             window['-OUTPUT-' + sg.WRITE_ONLY_KEY].print(final_path, text_color='black')
+            my_path.clear()
 
         else:
             Train_path = list(values.values())[0]
